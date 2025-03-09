@@ -1,9 +1,10 @@
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CalendarStrip from "react-native-calendar-strip";
 import moment from "moment";
 import { useTodoStore } from "@/store/todoStore";
 import Checkbox from "expo-checkbox";
+import RenderData from "./RenderData";
 
 const CalenderWithData = () => {
   const [initialDate, setInitialDate] = useState(moment());
@@ -20,6 +21,11 @@ const CalenderWithData = () => {
     if (diffDays === 0) return "Today";
     return taskDate.format("D MMM YYYY"); // Example: "4 Jan 2025"
   };
+  useEffect(() => {
+    // Set the initial date when component mounts
+    setInitialDate(moment(selectedDate).subtract(3, "days"));
+  }, []);
+
   return (
     <View>
       <View>
@@ -38,39 +44,8 @@ const CalenderWithData = () => {
         />
       </View>
       <View>
-        <FlatList
+        <RenderData
           data={data.filter((item) => item.createdAt === selectedDate)}
-          keyExtractor={(item) => item.id.toString()}
-          ListEmptyComponent={
-            <Text className="text-center text-gray-500 mt-5">
-              No tasks for this date
-            </Text>
-          }
-          renderItem={({ item }) => (
-            <View className="flex-row items-center bg-white p-4 my-2 rounded-lg shadow">
-              {/* ✅ Toggle completion state */}
-              <Checkbox
-                value={item.isFinished}
-                onValueChange={() => toggleComplete(item.id)}
-                className="mr-3"
-              />
-              <View className="flex-1">
-                <Text
-                  className={`text-lg font-bold ${
-                    item.isFinished ? "text-gray-400 line-through" : ""
-                  }`}
-                >
-                  {item.title}
-                </Text>
-                <Text className="text-gray-500">
-                  Created: {formatDate(item.createdAt)}
-                </Text>
-              </View>
-              <TouchableOpacity>
-                <Text className="text-blue-500">Edit</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         />
       </View>
     </View>

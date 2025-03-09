@@ -10,6 +10,7 @@ import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Todo, useTodoStore } from "@/store/todoStore";
 import Checkbox from "expo-checkbox";
+import RenderData from "./RenderData";
 
 const SearchBarCust = () => {
   const { getAllTodos, toggleComplete } = useTodoStore();
@@ -35,9 +36,9 @@ const SearchBarCust = () => {
     const diffDays = taskDate.diff(today, "days");
     return diffDays === 0 ? "Today" : taskDate.format("D MMM YYYY");
   };
-
+  // console.log(data);
   return (
-    <View>
+    <View className="flex-col gap-2">
       <View className="flex-row gap-2 items-center bg-white p-2 rounded-xl">
         <Ionicons name="search" size={30} />
         <TextInput
@@ -48,39 +49,7 @@ const SearchBarCust = () => {
         />
       </View>
       <View>
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id.toString()}
-          ListEmptyComponent={
-            <Text className="text-center text-gray-500 mt-5">
-              No tasks found
-            </Text>
-          }
-          renderItem={({ item }) => (
-            <View className="flex-row items-center bg-white p-4 my-2 rounded-lg shadow">
-              <Checkbox
-                value={item.isFinished}
-                onValueChange={() => toggleComplete(item.id)}
-                className="mr-3"
-              />
-              <View className="flex-1">
-                <Text
-                  className={`text-lg font-bold ${
-                    item.isFinished ? "text-gray-400 line-through" : ""
-                  }`}
-                >
-                  {item.title}
-                </Text>
-                <Text className="text-gray-500">
-                  Created: {formatDate(item.createdAt)}
-                </Text>
-              </View>
-              <TouchableOpacity>
-                <Text className="text-blue-500">Edit</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
+        <RenderData data={data} />
       </View>
     </View>
   );

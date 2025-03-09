@@ -8,7 +8,7 @@ const FilterMAin = () => {
   const { getFilterType, setFilterType } = useTodoStore();
   const format = getFilterType().type;
   return (
-    <View>
+    <View className="flex-col gap-2">
       <View className="flex-row justify-around ">
         <TouchableOpacity onPress={() => setFilterType({ type: "calender" })}>
           <Text
