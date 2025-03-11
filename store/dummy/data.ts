@@ -41,7 +41,7 @@ export const fakedata: Todo[] = [
         title: "Refactor API endpoints",
         isFinished: false,
         createdAt: "2025-03-10",
-        dueDate: "2025-03-18",
+        dueDate: "2025-03-11",
     },
     {
         id: 7,
@@ -55,20 +55,20 @@ export const fakedata: Todo[] = [
         title: "Update resume",
         isFinished: false,
         createdAt: "2025-03-11",
-        dueDate: "2025-03-15",
+        dueDate: "2025-03-11",
     },
     {
         id: 9,
         title: "Fix UI bugs in dashboard",
         isFinished: true,
         createdAt: "2025-03-10",
-        dueDate: "2025-03-12",
+        dueDate: "2025-03-11",
     },
     {
         id: 10,
         title: "Plan next YouTube video",
         isFinished: false,
         createdAt: "2025-03-11",
-        dueDate: "2025-03-20",
+        dueDate: "2025-03-11",
     },
 ];

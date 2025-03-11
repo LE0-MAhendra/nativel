@@ -1,52 +1,82 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import React from "react";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
 import Checkbox from "expo-checkbox";
 import moment from "moment";
 import { Todo, useTodoStore } from "@/store/todoStore";
+import Custmodal from "./Custmodal";
 
-const RenderData = ({ data }: any) => {
-  const { toggleComplete } = useTodoStore();
+const RenderData = ({ data }: { data: Todo[] }) => {
+  const { toggleComplete, editOneTodo } = useTodoStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editTask, setEditTask] = useState<Todo | null>(null);
 
   const formatDate = (dateString: string) => {
     const today = moment().startOf("day");
     const taskDate = moment(dateString, "YYYY-MM-DD");
-    const diffDays = taskDate.diff(today, "days");
-    return diffDays === 0 ? "Today" : taskDate.format("D MMM YYYY");
+    return taskDate.diff(today, "days") === 0
+      ? "Today"
+      : taskDate.format("D MMM YYYY");
   };
+
   return (
     <View>
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id.toString()}
-        ListEmptyComponent={
+      <ScrollView>
+        {data.length === 0 ? (
           <Text className="text-center text-gray-500 mt-5">No tasks found</Text>
-        }
-        renderItem={({ item }) => (
-          <View className="flex-row items-center bg-white p-4 my-2 rounded-lg shadow">
-            <Checkbox
-              value={item.isFinished}
-              onValueChange={() => toggleComplete(item.id)}
-              className="mr-3"
-            />
-            <View className="flex-1">
-              <Text
-                className={`text-lg font-bold ${
-                  item.isFinished ? "text-gray-400 line-through" : ""
-                }`}
+        ) : (
+          data.map((item) => (
+            <View
+              key={item.id}
+              className="flex-row items-center bg-white p-4 my-2 rounded-lg shadow"
+            >
+              {/* Checkbox */}
+              <Checkbox
+                value={item.isFinished}
+                // onValueChange={() => alert("clicked")}
+                onValueChange={() => toggleComplete(item.id)}
+                className="mr-3"
+              />
+
+              {/* Task Info */}
+              <View className="flex-1">
+                <Text
+                  className={`text-lg font-bold ${
+                    item.isFinished ? "text-gray-400 line-through" : ""
+                  }`}
+                >
+                  {item.title}
+                </Text>
+                <Text className="text-gray-500">
+                  Created: {formatDate(item.createdAt)}
+                </Text>
+              </View>
+
+              {/* Edit Button */}
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(true);
+                  setEditTask(item);
+                }}
               >
-                {item.title}
-              </Text>
-              <Text className="text-gray-500">
-                Created: {formatDate(item.createdAt)}
-              </Text>
+                <Text className="text-blue-500">Edit</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity>
-              <Text className="text-blue-500">Edit</Text>
-            </TouchableOpacity>
-          </View>
+          ))
         )}
-        contentContainerStyle={{ flexGrow: 1 }}
-      />
+      </ScrollView>
+
+      {/* Edit Modal */}
+      {editTask && (
+        <Custmodal
+          data={editTask}
+          setModalVisible={setModalVisible}
+          modalVisible={modalVisible}
+          onSave={(updatedTask) => {
+            editOneTodo(editTask.id, updatedTask);
+            setModalVisible(false);
+          }}
+        />
+      )}
     </View>
   );
 };

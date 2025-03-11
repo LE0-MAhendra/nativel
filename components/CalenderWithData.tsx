@@ -1,33 +1,24 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View } from "react-native";
 import React, { useEffect, useState } from "react";
 import CalendarStrip from "react-native-calendar-strip";
 import moment from "moment";
 import { useTodoStore } from "@/store/todoStore";
-import Checkbox from "expo-checkbox";
 import RenderData from "./RenderData";
 
 const CalenderWithData = () => {
   const [initialDate, setInitialDate] = useState(moment());
-  const { getAllTodos, toggleComplete } = useTodoStore();
+  const { getAllTodos } = useTodoStore();
   const [selectedDate, setSelectedDate] = useState(
     moment().format("YYYY-MM-DD")
   );
   const data = getAllTodos();
-  const formatDate = (dateString: string) => {
-    const today = moment().startOf("day");
-    const taskDate = moment(dateString, "YYYY-MM-DD");
-    const diffDays = taskDate.diff(today, "days");
-
-    if (diffDays === 0) return "Today";
-    return taskDate.format("D MMM YYYY"); // Example: "4 Jan 2025"
-  };
   useEffect(() => {
     // Set the initial date when component mounts
     setInitialDate(moment(selectedDate).subtract(3, "days"));
   }, []);
 
   return (
-    <View>
+    <View className="h-[100%]">
       <View>
         <CalendarStrip
           scrollable
@@ -43,9 +34,9 @@ const CalenderWithData = () => {
           onDateSelected={(date) => setSelectedDate(date.format("YYYY-MM-DD"))}
         />
       </View>
-      <View>
+      <View className="mb-[180px]">
         <RenderData
-          data={data.filter((item) => item.createdAt === selectedDate)}
+          data={data.filter((item) => item.dueDate === selectedDate)}
         />
       </View>
     </View>

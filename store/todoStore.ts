@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import moment from "moment";
-import { fakedata } from "./dummy/data";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define the structure for a Todo item
 export interface Todo {
@@ -27,12 +27,42 @@ interface TodoStore {
     editOneTodo: (id: number, updatedFields: Partial<Todo>) => void;
     deleteOneTodo: (id: number) => void;
     toggleComplete: (id: number) => void;
+    loadTodos: () => Promise<void>;
 }
+
+// Helper functions to handle async storage
+const TODO_STORAGE_KEY = "todos";
+
+// Save todos to AsyncStorage
+const saveTodos = async (todos: Todo[]) => {
+    try {
+        await AsyncStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos));
+    } catch (error) {
+        console.error("Failed to save todos:", error);
+    }
+};
+
+// Load todos from AsyncStorage
+const loadTodos = async () => {
+    try {
+        const storedTodos = await AsyncStorage.getItem(TODO_STORAGE_KEY);
+        return storedTodos ? JSON.parse(storedTodos) : [];
+    } catch (error) {
+        console.error("Failed to load todos:", error);
+        return [];
+    }
+};
 
 // Create the Zustand store
 export const useTodoStore = create<TodoStore>((set, get) => ({
-    todos: fakedata,
+    todos: [],
     filterType: { type: "calender" },
+
+    // Load todos from storage on app start
+    loadTodos: async () => {
+        const todos = await loadTodos();
+        set({ todos });
+    },
 
     // Get all todos
     getAllTodos: () => get().todos,
@@ -48,41 +78,45 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
     },
 
     // Add a new todo
-    addTodo: (title, dueDate) => {
-        set((state) => ({
-            todos: [
-                ...state.todos,
-                {
-                    id: state.todos.length + 1,
-                    title,
-                    isFinished: false,
-                    createdAt: moment().format("YYYY-MM-DD"),
-                    dueDate,
-                },
-            ],
-        }));
+    addTodo: async (title, dueDate) => {
+        set((state) => {
+            const newTodo: Todo = {
+                id: state.todos.length + 1,
+                title,
+                isFinished: false,
+                createdAt: moment().format("YYYY-MM-DD"),
+                dueDate,
+            };
+            const updatedTodos = [...state.todos, newTodo];
+            saveTodos(updatedTodos); // Persist to storage
+            return { todos: updatedTodos };
+        });
     },
 
     // Edit an existing todo
-    editOneTodo: (id, updatedFields) => {
-        set((state) => ({
-            todos: state.todos.map((todo) =>
+    editOneTodo: async (id, updatedFields) => {
+        set((state) => {
+            const updatedTodos = state.todos.map((todo) =>
                 todo.id === id ? { ...todo, ...updatedFields } : todo
-            ),
-        }));
+            );
+            saveTodos(updatedTodos); // Persist to storage
+            return { todos: updatedTodos };
+        });
     },
 
     // Delete a todo
-    deleteOneTodo: (id) => {
-        set((state) => ({
-            todos: state.todos.filter((todo) => todo.id !== id),
-        }));
+    deleteOneTodo: async (id) => {
+        set((state) => {
+            const updatedTodos = state.todos.filter((todo) => todo.id !== id);
+            saveTodos(updatedTodos); // Persist to storage
+            return { todos: updatedTodos };
+        });
     },
 
     // Toggle completion status
-    toggleComplete: (id) => {
-        set((state) => ({
-            todos: state.todos.map((todo) =>
+    toggleComplete: async (id) => {
+        set((state) => {
+            const updatedTodos = state.todos.map((todo) =>
                 todo.id === id
                     ? {
                         ...todo,
@@ -92,7 +126,9 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
                             : undefined,
                     }
                     : todo
-            ),
-        }));
+            );
+            saveTodos(updatedTodos); // Persist to storage
+            return { todos: updatedTodos };
+        });
     },
 }));
